@@ -1,0 +1,5 @@
+python-jose[cryptography]
+fastapi[standard]
+passlib[bcrypt]
+flask
+flask-sqlalchemy
