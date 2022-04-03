@@ -3,3 +3,4 @@ fastapi[standard]
 passlib[bcrypt]
 flask
 flask-sqlalchemy
+python-multipart

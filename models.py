@@ -41,8 +41,58 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 def get_user_id(username):
-	user = db.query(APIUser).filter_by(username=username).first()
+	# again, in production would verify validity of inputs
+	user = get_user(username)
 	return user.id
+
+def get_user(username):
+	user = db.query(APIUser).filter_by(username=username).first()
+	return user
+
+def authenticate_user(username, password):
+	# again, in production would verify validity of inputs
+    user = get_user(username)
+
+    if not user:
+        return False
+    if not verify_password(password, user.password):
+        return False
+
+    return user
+
+def create_access_token(data: dict, expires_delta):
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=15)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username = payload.get("sub")
+        if username is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = get_user_id(username=username)
+    if user is None:
+        raise credentials_exception
+
+    return user
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
 class APIUser(Base):
 	__tablename__ = 'APIUsers'
