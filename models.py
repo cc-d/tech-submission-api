@@ -34,6 +34,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 db = SessionLocal()
 
+# i normally wouldnt include these functions in the model file but am doing so for simplicity's sake
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 
@@ -93,6 +94,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+class Registered(BaseModel):
+    username: str
+    password: str
 
 class APIUser(Base):
 	__tablename__ = 'APIUsers'

@@ -6,8 +6,6 @@ from fastapi.responses import PlainTextResponse, RedirectResponse
 
 import uvicorn
 
-from flask_sqlalchemy import SQLAlchemy
-
 import json
 
 from models import *
@@ -21,21 +19,27 @@ def index():
     The index page of this app should print all users and any information that should be displayed
     as part of this technical submission
     '''
+
+    # simple display of all relevant data on index page
     users = db.query(APIUser).all()
     user_string = 'Users: '
 
     contacts = db.query(Contact).all()
     contact_string = 'Contacts: '
 
+    # in a real app, obviously showing the hashed password wouldn't be a good idea
     for u in users:
         user_string += str(vars(u)) + ' '
 
     for c in contacts:
         contact_string += str(vars(c)) + ' '
 
+    # data display would obviously look much nicer ideally but this gets the job done for this 
+    # task, user and contact records are seperated by >>>>>>
     return user_string + ' >>>>>>> ' + contact_string
 
 
+# i'd also normally define a model to be used specifically for users
 @app.get('/register')
 async def register(username: str, password: str):
     '''
@@ -47,9 +51,12 @@ async def register(username: str, password: str):
     new_user = APIUser(username=username, password=get_password_hash(password))
     db.add(new_user)
     db.commit()
+
     return {'success':'ok'}
 
 
+# i'd also normally define a model to be used specifically contacts, but i used a different format when
+# defining the datbase models, fine for a quick example but not ideal in a real app
 @app.get('/add_contact')
 async def add_contact(user: str, numbers: str, first: str, last: str, city: str,
                       state: str, zip_code: int):
